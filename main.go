@@ -18,7 +18,10 @@ var (
 
 func main() {
 
+	// gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+	router.Use(utils.ErrorHandler)
+	router.Use(utils.CORS())
 
 	authCtrl := new(controllers.AuthController)
 	userCtrl := new(controllers.UserController)

@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ViperEnvVariable: use viper package to read .env file
+// ViperEnvVariable : use viper package to read .env file
 // return the value of the key
 func ViperEnvVariable(key string) string {
 
