@@ -4,22 +4,23 @@ import (
 	"net/http"
 	"strings"
 
+	"izihrm/forms"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/mantranit/izihrm/models"
 )
 
 // GetClaims from token
-func GetClaims(c *gin.Context) *models.CustomClaims {
+func GetClaims(c *gin.Context) *forms.CustomClaims {
 	reqToken := c.Request.Header.Get("Authorization")
 	splitToken := strings.Split(reqToken, "Bearer")
 	reqToken = strings.TrimSpace(splitToken[1])
 
-	token, _ := jwt.ParseWithClaims(reqToken, &models.CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
+	token, _ := jwt.ParseWithClaims(reqToken, &forms.CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(ViperEnvVariable("JWT_SECRET_KEY")), nil
 	})
 
-	claims, _ := token.Claims.(*models.CustomClaims)
+	claims, _ := token.Claims.(*forms.CustomClaims)
 
 	return claims
 }
@@ -39,7 +40,7 @@ func Authorization(auths ...string) gin.HandlerFunc {
 		splitToken := strings.Split(reqToken, "Bearer")
 		reqToken = strings.TrimSpace(splitToken[1])
 
-		token, err := jwt.ParseWithClaims(reqToken, &models.CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(reqToken, &forms.CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 			return []byte(ViperEnvVariable("JWT_SECRET_KEY")), nil
 		})
 

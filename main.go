@@ -1,11 +1,13 @@
 package main
 
 import (
+	"net/http"
 	"os"
 
+	"izihrm/controllers"
+	"izihrm/utils"
+
 	"github.com/gin-gonic/gin"
-	"github.com/mantranit/izihrm/controllers"
-	"github.com/mantranit/izihrm/utils"
 )
 
 // Note: This is just an example for a tutorial
@@ -18,18 +20,26 @@ func main() {
 
 	router := gin.Default()
 
+	authCtrl := new(controllers.AuthController)
+	userCtrl := new(controllers.UserController)
 	api := router.Group("/api")
-	// no authentication endpoints
 	{
-		api.POST("/authenticate", controllers.Authenticate)
+		api.POST("/authenticate", authCtrl.Authenticate)
 	}
 	{
 		apiUser := api.Group("/user")
 		apiUser.Use(utils.Authorization())
 		{
-			apiUser.GET("/current", controllers.Current)
+			apiUser.GET("/current", userCtrl.Current)
 		}
 	}
+
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusNotFound,
+			"message":    "NotFound",
+		})
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {

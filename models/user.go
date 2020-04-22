@@ -1,6 +1,14 @@
 package models
 
+// UserModel class
+type UserModel struct{}
+
+// User object
 type User struct {
-	Username string `form:"username" json:"username" xml:"username" binding:"required"`
-	AuthType string `form:"authType" json:"authType" xml:"authType" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Hash      string `json:"hash" binding:"required"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Birthday  string `json:"birthday"`
+	Gender    string `json:"gender"`
 }

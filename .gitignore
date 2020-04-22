@@ -15,5 +15,6 @@
 # vendor/
 
 .vscode
-app/izihrm
+.sonarlint
+izihrm
 __debug_bin
