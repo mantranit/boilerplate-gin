@@ -4,38 +4,24 @@ import (
 	"net/http"
 	"os"
 
-	"izihrm/controllers"
+	"izihrm/routers"
 	"izihrm/utils"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-// Note: This is just an example for a tutorial
-// VALID_AUTHENTICATIONS is all role of user
-var (
-	VALID_AUTHENTICATIONS = []string{"user", "admin", "subscriber"}
-)
-
 func main() {
-
 	// gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(utils.ErrorHandler)
-	router.Use(utils.CORS())
 
-	authCtrl := new(controllers.AuthController)
-	userCtrl := new(controllers.UserController)
-	api := router.Group("/api")
-	{
-		api.POST("/authenticate", authCtrl.Authenticate)
-	}
-	{
-		apiUser := api.Group("/user")
-		apiUser.Use(utils.Authorization())
-		{
-			apiUser.GET("/current", userCtrl.Current)
-		}
-	}
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	router.Use(cors.New(config))
+
+	routers.API(router)
+	routers.APIUser(router)
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

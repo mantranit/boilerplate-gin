@@ -25,7 +25,7 @@ func (user *AuthController) Authenticate(c *gin.Context) {
 	expirationTime := time.Now().Add(23 * time.Hour)
 	// Create the Claims
 	claims := forms.CustomClaims{
-		Role: "admin",
+		Role: "ADMIN",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			Issuer:    body.Email,
@@ -46,5 +46,17 @@ func (user *AuthController) Authenticate(c *gin.Context) {
 		"statusCode": http.StatusOK,
 		"message":    "Success",
 		"data":       token,
+	})
+}
+
+// Me : get current user by token login
+func (user *AuthController) Me(c *gin.Context) {
+	claims := utils.GetClaims(c)
+	userID := claims.Issuer
+
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+		"data":       userID,
 	})
 }

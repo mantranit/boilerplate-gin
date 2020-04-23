@@ -8,6 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/thoas/go-funk"
 )
 
 // GetClaims from token
@@ -49,7 +50,7 @@ func Authorization(auths ...string) gin.HandlerFunc {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 				c.JSON(http.StatusOK, gin.H{
 					"statusCode": http.StatusNotAcceptable,
-					"message":    "NotAcceptable: That's not even a token",
+					"message":    "NotAcceptable: Token is malformed",
 				})
 			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
 				c.JSON(http.StatusOK, gin.H{
@@ -65,6 +66,19 @@ func Authorization(auths ...string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		if len(auths) > 0 {
+			claims := GetClaims(c)
+			if !funk.ContainsString(auths, claims.Role) {
+				c.JSON(http.StatusOK, gin.H{
+					"statusCode": http.StatusForbidden,
+					"message":    "Forbidden",
+				})
+				c.Abort()
+				return
+			}
+		}
+
 		// add session verification here, like checking if the user and authType
 		// combination actually exists if necessary. Try adding caching this (redis)
 		// since this middleware might be called a lot

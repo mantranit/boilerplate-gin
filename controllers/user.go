@@ -3,20 +3,27 @@ package controllers
 import (
 	"net/http"
 
-	"izihrm/utils"
-
 	"github.com/gin-gonic/gin"
 )
 
 // UserController class
 type UserController struct{}
 
-// Current : get current user follow token login
-func (user *UserController) Current(c *gin.Context) {
-	claims := utils.GetClaims(c)
+// GetUser : get user by userId
+func (user *UserController) GetUser(c *gin.Context) {
+	userID := c.Param("id")
 	c.JSON(http.StatusOK, gin.H{
 		"statusCode": http.StatusOK,
 		"message":    "Success",
-		"data":       claims,
+		"data":       userID,
+	})
+}
+
+// Delete : userId
+func (user *UserController) Delete(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+		"params":     c.Params,
 	})
 }

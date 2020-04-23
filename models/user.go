@@ -9,6 +9,6 @@ type User struct {
 	Hash      string `json:"hash" binding:"required"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
-	Birthday  string `json:"birthday"`
+	Birthday  int64  `json:"birthday"`
 	Gender    string `json:"gender"`
 }
