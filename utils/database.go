@@ -9,6 +9,9 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres driver
 )
 
+// DB cursor
+var DB *gorm.DB
+
 // ConnectDatabase ...
 func ConnectDatabase() *gorm.DB {
 	dbURI := os.Getenv("DATABASE_URL")

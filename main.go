@@ -14,25 +14,25 @@ import (
 )
 
 func main() {
-	db := utils.ConnectDatabase()
-	defer db.Close()
-	db.AutoMigrate(&models.Account{})
+	utils.DB = utils.ConnectDatabase()
+	defer utils.DB.Close()
+	utils.DB.AutoMigrate(&models.Account{})
 
 	// gin.SetMode(gin.ReleaseMode)
-	r := gin.Default()
-	r.Use(utils.ErrorHandler)
+	router := gin.Default()
+	router.Use(utils.ErrorHandler)
 
 	// set CORS
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-	r.Use(cors.New(config))
+	router.Use(cors.New(config))
 
 	// defined all routes
-	auth.SetupRouter(r, db)
-	account.SetupRouter(r, db)
+	auth.SetupRouter(router)
+	account.SetupRouter(router)
 
 	// fallback route
-	r.NoRoute(func(c *gin.Context) {
+	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusNotFound,
 			"message":    "NotFound",
@@ -43,5 +43,5 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	r.Run(":" + port)
+	router.Run(":" + port)
 }

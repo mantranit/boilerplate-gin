@@ -4,24 +4,17 @@ import (
 	"izihrm/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 // SetupRouter ...
-func SetupRouter(router *gin.Engine, db *gorm.DB) {
+func SetupRouter(router *gin.Engine) {
 	api := router.Group("/api")
 	{
-		api.POST("/authenticate", func(c *gin.Context) {
-			CtrlAuthenticate(c, db)
-		})
-		api.POST("/register", func(c *gin.Context) {
-			CtrlRegister(c, db)
-		})
+		api.POST("/authenticate", CtrlAuthenticate)
+		api.POST("/register", CtrlRegister)
 	}
 	{
 		api.Use(utils.Authorization())
-		api.GET("/me", func(c *gin.Context) {
-			CtrlMe(c, db)
-		})
+		api.GET("/me", CtrlMe)
 	}
 }

@@ -9,12 +9,11 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // CtrlAuthenticate : get token with username/password
-func CtrlAuthenticate(c *gin.Context, db *gorm.DB) {
+func CtrlAuthenticate(c *gin.Context) {
 	var body FormLogin
 	c.ShouldBind(&body)
 	c.JSON(http.StatusOK, gin.H{
@@ -48,40 +47,41 @@ func CtrlAuthenticate(c *gin.Context, db *gorm.DB) {
 }
 
 // CtrlRegister ...
-func CtrlRegister(c *gin.Context, db *gorm.DB) {
+func CtrlRegister(c *gin.Context) {
 	var rf FormRegister
 	c.ShouldBind(&rf)
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte(rf.Password), bcrypt.DefaultCost)
 	acc := models.Account{
-		Username: rf.Username,
-		Email:    rf.Email,
-		Hash:     string(hash),
+		Username:  rf.Username,
+		Email:     rf.Email,
+		Hash:      string(hash),
+		Status:    "PENDING",
+		CreatedBy: rf.Username,
 	}
 
-	obj := db.Create(&acc)
-	if obj.Error != nil {
+	if obj := utils.DB.Create(&acc); obj.Error == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusOK,
+			"message":    "Success",
+			"data":       acc,
+		})
+	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusInternalServerError,
 			"message":    obj.Error.Error(),
 		})
-		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"statusCode": http.StatusOK,
-		"message":    "Success",
-		"data":       acc,
-	})
 }
 
 // CtrlMe : get current account by token login
-func CtrlMe(c *gin.Context, db *gorm.DB) {
-	// claims := utils.GetClaims(c)
-	// accountID := claims.Issuer
+func CtrlMe(c *gin.Context) {
+	claims := utils.GetClaims(c)
+	accountID := claims.Issuer
 
 	c.JSON(http.StatusOK, gin.H{
 		"statusCode": http.StatusOK,
 		"message":    "Success",
-		// "data":       accountID,
+		"data":       accountID,
 	})
 }
