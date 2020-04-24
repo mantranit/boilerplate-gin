@@ -1,6 +1,7 @@
 package account
 
 import (
+	"izihrm/utils"
 	"net/http"
 	"strconv"
 
@@ -9,18 +10,22 @@ import (
 
 // CtrlGetAll ...
 func CtrlGetAll(c *gin.Context) {
-	if obj := ServiceGetAll(c); obj.Error == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"statusCode": http.StatusOK,
-			"message":    "Success",
-			"data":       obj.Value,
-		})
-	} else {
+	var accounts []Account
+	result := utils.DB.Find(&accounts)
+
+	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusInternalServerError,
-			"message":    obj.Error.Error(),
+			"message":    result.Error.Error(),
 		})
+		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+		"data":       accounts,
+	})
 }
 
 // CtrlGetByID ...
@@ -55,30 +60,26 @@ func CtrlUpdate(c *gin.Context) {
 
 // CtrlDelete ...
 func CtrlDelete(c *gin.Context) {
-	if accID, err := strconv.ParseUint(c.Param("id"), 10, 64); err == nil {
-		if obj := ServiceGetByID(uint(accID)); obj.RowsAffected > 0 {
-			if obj2 := ServiceDelete(uint(accID)); obj2.Error == nil {
-				c.JSON(http.StatusOK, gin.H{
-					"statusCode": http.StatusOK,
-					"message":    "Success",
-					"data":       obj2.Value,
-				})
-			} else {
-				c.JSON(http.StatusOK, gin.H{
-					"statusCode": http.StatusInternalServerError,
-					"message":    obj2.Error.Error(),
-				})
-			}
-		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"statusCode": http.StatusNotFound,
-				"message":    "NotFound: accountID",
-			})
-		}
-	} else {
+	accID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusBadRequest,
 			"message":    err.Error(),
 		})
+		return
 	}
+
+	dbResult := utils.DB.Where("id = ?", accID).Delete(&Account{})
+
+	if dbResult.RowsAffected == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusNoContent,
+			"message":    "NoContent",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+	})
 }
