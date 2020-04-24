@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"os"
 
-	"izihrm/routers"
+	"izihrm/api/account"
+	"izihrm/api/auth"
+	"izihrm/models"
 	"izihrm/utils"
 
 	"github.com/gin-contrib/cors"
@@ -12,18 +14,25 @@ import (
 )
 
 func main() {
-	// gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
-	router.Use(utils.ErrorHandler)
+	db := utils.ConnectDatabase()
+	defer db.Close()
+	db.AutoMigrate(&models.Account{})
 
+	// gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
+	r.Use(utils.ErrorHandler)
+
+	// set CORS
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-	router.Use(cors.New(config))
+	r.Use(cors.New(config))
 
-	routers.API(router)
-	routers.APIUser(router)
+	// defined all routes
+	auth.SetupRouter(r, db)
+	account.SetupRouter(r, db)
 
-	router.NoRoute(func(c *gin.Context) {
+	// fallback route
+	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusNotFound,
 			"message":    "NotFound",
@@ -34,5 +43,5 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	router.Run(":" + port)
+	r.Run(":" + port)
 }
