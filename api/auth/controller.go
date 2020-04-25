@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"izihrm/api/account"
 	"izihrm/models"
 	"izihrm/utils"
 	"izihrm/utils/send"
@@ -49,10 +50,11 @@ func CtrlAuthenticate(c *gin.Context) {
 	expirationTime := time.Now().Add(23 * time.Hour)
 	// Create the Claims
 	claims := utils.CustomClaims{
-		Role: utils.ADMIN,
+		AccountID: account.ID,
+		Role:      utils.ADMIN,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
-			Issuer:    login.Email,
+			Issuer:    account.Email,
 		},
 	}
 	mySigningKey := []byte(utils.ViperEnvVariable("JWT_SECRET_KEY"))
@@ -126,11 +128,13 @@ func CtrlRegister(c *gin.Context) {
 // CtrlMe : get current account by token login
 func CtrlMe(c *gin.Context) {
 	claims := utils.GetClaims(c)
-	accountID := claims.Issuer
+
+	var obj account.Account
+	utils.DB.Where("id = ?", claims.AccountID).First(&obj)
 
 	c.JSON(http.StatusOK, gin.H{
 		"statusCode": http.StatusOK,
 		"message":    "Success",
-		"data":       accountID,
+		"data":       obj,
 	})
 }

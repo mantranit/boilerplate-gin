@@ -17,7 +17,8 @@ const (
 
 // CustomClaims object
 type CustomClaims struct {
-	Role string `json:"role"`
+	AccountID uint   `json:"accountId"`
+	Role      string `json:"role"`
 	jwt.StandardClaims
 }
 
