@@ -129,12 +129,20 @@ func CtrlRegister(c *gin.Context) {
 func CtrlMe(c *gin.Context) {
 	claims := utils.GetClaims(c)
 
-	var obj account.Account
-	utils.DB.Where("id = ?", claims.AccountID).First(&obj)
+	var data account.Account
+	result := utils.DB.Where("id = ?", claims.AccountID).First(&data)
+
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusNoContent,
+			"message":    result.Error.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"statusCode": http.StatusOK,
 		"message":    "Success",
-		"data":       obj,
+		"data":       data,
 	})
 }
