@@ -6,6 +6,7 @@ import (
 
 	"izihrm/models"
 	"izihrm/utils"
+	"izihrm/utils/send"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,14 @@ import (
 func CtrlAuthenticate(c *gin.Context) {
 	var login FormLogin
 	c.ShouldBind(&login)
+	err := utils.Validate.Struct(login)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusBadRequest,
+			"message":    err.Error(),
+		})
+		return
+	}
 
 	var account models.Account
 	obj := utils.DB.Where("username like ?", login.Email).Find(&account)
@@ -67,11 +76,11 @@ func CtrlAuthenticate(c *gin.Context) {
 func CtrlRegister(c *gin.Context) {
 	var register FormRegister
 	c.ShouldBind(&register)
-
-	if register.Email == "" || register.Password == "" || !utils.ValidateEmail(register.Email) {
+	err := utils.Validate.Struct(register)
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusBadRequest,
-			"message":    "BadRequest",
+			"message":    err.Error(),
 		})
 		return
 	}
@@ -92,17 +101,26 @@ func CtrlRegister(c *gin.Context) {
 		CreatedBy: register.Username,
 	}
 
-	if obj := utils.DB.Create(&account); obj.Error != nil {
+	result := utils.DB.Create(&account)
+	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusInternalServerError,
-			"message":    obj.Error.Error(),
+			"message":    result.Error.Error(),
 		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"statusCode": http.StatusOK,
-			"message":    "Success",
-		})
+		return
 	}
+	responseBody := send.Mail(register.Username, register.Email)
+	if responseBody != "" {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    responseBody,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+	})
 }
 
 // CtrlMe : get current account by token login
