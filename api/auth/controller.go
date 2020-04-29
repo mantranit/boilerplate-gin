@@ -118,7 +118,7 @@ func CtrlRegister(c *gin.Context) {
 		return
 	}
 
-	var url = fmt.Sprintf("https://izihrm-server.herokuapp.com/activate/%s", token)
+	var url = fmt.Sprintf("%s/activate/%s", utils.ViperEnvVariable("DOMAIN_FE"), token)
 	content, errContent := mustache.RenderFile("emails/ActivateAccount.mustache", map[string]string{"url": url})
 	if errContent != nil {
 		c.JSON(http.StatusOK, gin.H{
