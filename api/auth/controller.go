@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -9,8 +10,10 @@ import (
 	"izihrm/utils"
 	"izihrm/utils/send"
 
+	"github.com/cbroglie/mustache"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/sethvargo/go-password/password"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -95,12 +98,15 @@ func CtrlRegister(c *gin.Context) {
 		})
 		return
 	}
+
+	token := password.MustGenerate(64, 10, 0, false, true)
 	account := models.Account{
 		Username:  register.Username,
 		Email:     register.Email,
 		Hash:      string(hash),
-		Status:    "PENDING",
+		Status:    models.StatusPending,
 		CreatedBy: register.Username,
+		Token:     token,
 	}
 
 	result := utils.DB.Create(&account)
@@ -111,7 +117,18 @@ func CtrlRegister(c *gin.Context) {
 		})
 		return
 	}
-	responseBody := send.Mail(register.Username, register.Email)
+
+	var url = fmt.Sprintf("https://izihrm-server.herokuapp.com/activate/%s", token)
+	content, errContent := mustache.RenderFile("emails/ActivateAccount.mustache", map[string]string{"url": url})
+	if errContent != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    errContent.Error(),
+		})
+		return
+	}
+
+	responseBody := send.Mail(content, register.Username, register.Email)
 	if responseBody != "" {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusInternalServerError,
