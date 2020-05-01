@@ -30,7 +30,6 @@ const (
 // Account object
 type Account struct {
 	gorm.Model
-	Username  string `gorm:"unique" binding:"required"`
 	Email     string `gorm:"unique" binding:"required"`
 	Hash      string `binding:"required"`
 	FirstName string

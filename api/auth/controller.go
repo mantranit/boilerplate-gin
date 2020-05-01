@@ -31,16 +31,13 @@ func CtrlAuthenticate(c *gin.Context) {
 	}
 
 	var account models.Account
-	obj := utils.DB.Where("username like ?", login.Email).Find(&account)
-	if obj.RowsAffected == 0 {
-		obj = utils.DB.Where("email like ?", login.Email).Find(&account)
-		if obj.RowsAffected == 0 {
-			c.JSON(http.StatusOK, gin.H{
-				"statusCode": http.StatusNotFound,
-				"message":    "NotFound",
-			})
-			return
-		}
+	result := utils.DB.Where("email like ?", login.Email).Find(&account)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusNotFound,
+			"message":    "NotFound",
+		})
+		return
 	}
 
 	if account.Status != models.StatusActive {
@@ -109,7 +106,6 @@ func CtrlRegister(c *gin.Context) {
 	}
 
 	account := models.Account{
-		Username:  register.Username,
 		Email:     register.Email,
 		Hash:      string(hash),
 		Status:    models.StatusActive,

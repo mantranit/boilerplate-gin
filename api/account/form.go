@@ -13,7 +13,6 @@ type Account struct {
 	UpdatedAt time.Time  `json:"updatedAt"`
 	DeletedAt *time.Time `sql:"index" json:"deletedAt"`
 
-	Username  string        `json:"username"`
 	Email     string        `json:"email"`
 	FirstName string        `json:"firstName"`
 	LastName  string        `json:"lastName"`
