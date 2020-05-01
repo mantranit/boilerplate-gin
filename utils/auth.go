@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"izihrm/models"
 	"net/http"
 	"strings"
 
@@ -56,7 +57,20 @@ func Authorization(auths ...string) gin.HandlerFunc {
 			return []byte(ViperEnvVariable("JWT_SECRET_KEY")), nil
 		})
 
-		if !token.Valid {
+		if token.Valid {
+			claims, _ := token.Claims.(*CustomClaims)
+			var account models.Account
+			result := DB.Where("email like ?", claims.Issuer).Find(&account)
+			if result.RowsAffected == 0 || (result.RowsAffected == 1 && claims.Subject != account.Hash) {
+				c.JSON(http.StatusOK, gin.H{
+					"statusCode": http.StatusNotAcceptable,
+					"message":    "NotAcceptable: invalid account",
+				})
+
+				c.Abort()
+				return
+			}
+		} else {
 			ve, _ := err.(*jwt.ValidationError)
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 				c.JSON(http.StatusOK, gin.H{

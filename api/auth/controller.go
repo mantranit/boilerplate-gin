@@ -64,6 +64,7 @@ func CtrlAuthenticate(c *gin.Context) {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			Issuer:    account.Email,
+			Subject:   account.Hash,
 		},
 	}
 	mySigningKey := []byte(utils.ViperEnvVariable("JWT_SECRET_KEY"))
