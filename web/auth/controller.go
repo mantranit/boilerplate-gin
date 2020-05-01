@@ -14,9 +14,9 @@ import (
 
 var error string
 
-// CtrlResetPassword ...
-func CtrlResetPassword(c *gin.Context) {
-	gintemplate.HTML(c, http.StatusOK, "resetPassword", gin.H{
+// CtrlPassword ...
+func CtrlPassword(c *gin.Context) {
+	gintemplate.HTML(c, http.StatusOK, "password", gin.H{
 		"title": "Reset your password",
 		"token": c.Param("token"),
 		"error": error,
@@ -34,7 +34,7 @@ func CtrlCreatePassword(c *gin.Context) {
 	err := utils.Validate.Struct(resetPassword)
 	if err != nil {
 		error = err.Error()
-		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/reset-password/%s", token))
+		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/password/%s", token))
 		return
 	}
 
@@ -42,23 +42,24 @@ func CtrlCreatePassword(c *gin.Context) {
 	obj := utils.DB.Where("token like ?", token).Find(&account)
 	if obj.RowsAffected == 0 {
 		error = "NotFound"
-		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/reset-password/%s", token))
+		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/password/%s", token))
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(resetPassword.Password), bcrypt.DefaultCost)
 	if err != nil {
 		error = err.Error()
-		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/reset-password/%s", token))
+		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/password/%s", token))
 		return
 	}
 
 	account.Hash = string(hash)
+	account.Status = models.StatusActive
 	account.Token = ""
 	result := utils.DB.Save(&account)
 	if result.Error != nil {
 		error = result.Error.Error()
-		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/reset-password/%s", token))
+		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/password/%s", token))
 		return
 	}
 

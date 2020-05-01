@@ -162,7 +162,7 @@ func CtrlForgotPassword(c *gin.Context) {
 		return
 	}
 
-	var url = fmt.Sprintf("%s/reset-password/%s", utils.ViperEnvVariable("DOMAIN_FE"), token)
+	var url = fmt.Sprintf("%s/password/%s", utils.ViperEnvVariable("DOMAIN_FE"), token)
 	content, errContent := mustache.RenderFile("templates/emails/RecoverPassword.mustache", map[string]string{"url": url})
 	if errContent != nil {
 		c.JSON(http.StatusOK, gin.H{

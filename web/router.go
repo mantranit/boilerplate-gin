@@ -33,7 +33,7 @@ func SetupRouter(router *gin.Engine) {
 
 	web := router.Group("/")
 	{
-		web.GET("/reset-password/:token", auth.CtrlResetPassword)
+		web.GET("/password/:token", auth.CtrlPassword)
 		web.POST("/create-password/:token", auth.CtrlCreatePassword)
 		web.GET("/success", auth.CtrlSuccess)
 	}
