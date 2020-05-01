@@ -8,10 +8,9 @@ import (
 )
 
 // Mail ...
-func Mail(content string, name string, email string) string {
+func Mail(content, email, subject string) string {
 	from := mail.NewEmail("IZIHRM", "izi.hrm.2020@gmail.com")
-	subject := "Activate your account on IZIHRM"
-	to := mail.NewEmail(name, email)
+	to := mail.NewEmail(email, email)
 	plainTextContent := content
 	htmlContent := content
 	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)

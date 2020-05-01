@@ -1,0 +1,29 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    background: #f1f1f1;
+}
+/* What it does: Stops email clients resizing small text. */
+* {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+/* What it does: Stops Outlook from adding extra spacing to tables. */
+table,
+td {
+    mso-table-lspace: 0pt !important;
+    mso-table-rspace: 0pt !important;
+}
+table {border-spacing:0; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;}
+table td {border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;}
+
+img {
+    -ms-interpolation-mode:bicubic;
+    border: none;
+}
+.container {
+    max-width: 400px;
+}

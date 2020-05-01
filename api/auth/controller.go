@@ -42,6 +42,15 @@ func CtrlAuthenticate(c *gin.Context) {
 			return
 		}
 	}
+
+	if account.Status != models.StatusActive {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusLocked,
+			"message":    "Locked: Account not active",
+		})
+		return
+	}
+
 	if err := bcrypt.CompareHashAndPassword([]byte(account.Hash), []byte(login.Password)); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusNotAcceptable,
@@ -99,14 +108,12 @@ func CtrlRegister(c *gin.Context) {
 		return
 	}
 
-	token := password.MustGenerate(64, 10, 0, false, true)
 	account := models.Account{
 		Username:  register.Username,
 		Email:     register.Email,
 		Hash:      string(hash),
-		Status:    models.StatusPending,
+		Status:    models.StatusActive,
 		CreatedBy: register.Username,
-		Token:     token,
 	}
 
 	result := utils.DB.Create(&account)
@@ -118,8 +125,49 @@ func CtrlRegister(c *gin.Context) {
 		return
 	}
 
-	var url = fmt.Sprintf("%s/activate/%s", utils.ViperEnvVariable("DOMAIN_FE"), token)
-	content, errContent := mustache.RenderFile("emails/ActivateAccount.mustache", map[string]string{"url": url})
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+	})
+}
+
+// CtrlForgotPassword ...
+func CtrlForgotPassword(c *gin.Context) {
+	var forgotPassword FormForgotPassword
+	c.ShouldBind(&forgotPassword)
+	err := utils.Validate.Struct(forgotPassword)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusBadRequest,
+			"message":    err.Error(),
+		})
+		return
+	}
+
+	var account models.Account
+	obj := utils.DB.Where("email like ?", forgotPassword.Email).Find(&account)
+	if obj.RowsAffected == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusNotFound,
+			"message":    "NotFound",
+		})
+		return
+	}
+
+	token := password.MustGenerate(64, 10, 0, false, true)
+
+	account.Token = token
+	result := utils.DB.Save(&account)
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    result.Error.Error(),
+		})
+		return
+	}
+
+	var url = fmt.Sprintf("%s/reset-password/%s", utils.ViperEnvVariable("DOMAIN_FE"), token)
+	content, errContent := mustache.RenderFile("templates/emails/RecoverPassword.mustache", map[string]string{"url": url})
 	if errContent != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusInternalServerError,
@@ -128,7 +176,7 @@ func CtrlRegister(c *gin.Context) {
 		return
 	}
 
-	responseBody := send.Mail(content, register.Username, register.Email)
+	responseBody := send.Mail(content, forgotPassword.Email, "Reset your password")
 	if responseBody != "" {
 		c.JSON(http.StatusOK, gin.H{
 			"statusCode": http.StatusInternalServerError,
@@ -136,6 +184,56 @@ func CtrlRegister(c *gin.Context) {
 		})
 		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"message":    "Success",
+	})
+}
+
+// CtrlResetPassword ...
+func CtrlResetPassword(c *gin.Context) {
+	token := c.Param("token")
+	var resetPassword FormResetPassword
+	c.ShouldBind(&resetPassword)
+	err := utils.Validate.Struct(resetPassword)
+	if err != nil || token == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusBadRequest,
+			"message":    err.Error(),
+		})
+		return
+	}
+
+	var account models.Account
+	obj := utils.DB.Where("token like ?", token).Find(&account)
+	if obj.RowsAffected == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusNotFound,
+			"message":    "NotFound",
+		})
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(resetPassword.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    err.Error(),
+		})
+		return
+	}
+
+	account.Hash = string(hash)
+	result := utils.DB.Save(&account)
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    result.Error.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"statusCode": http.StatusOK,
 		"message":    "Success",

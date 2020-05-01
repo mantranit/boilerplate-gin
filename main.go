@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"os"
 
-	"izihrm/api/account"
-	"izihrm/api/auth"
+	"izihrm/api"
 	"izihrm/models"
 	"izihrm/utils"
+	"izihrm/web"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -28,8 +28,8 @@ func main() {
 	router.Use(cors.New(config))
 
 	// defined all routes
-	auth.SetupRouter(router)
-	account.SetupRouter(router)
+	api.SetupRouter(router)
+	web.SetupRouter(router)
 
 	// fallback route
 	router.NoRoute(func(c *gin.Context) {

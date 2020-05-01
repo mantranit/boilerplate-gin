@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{{.title}}</title>
+    <link rel="stylesheet" href="/assets/styles/global.css">
+</head>
+<body>
+    
+    <table width="100%">
+
+        {{include "layouts/header"}}
+        <tr><td align="center" valign="top" style="padding: 0 10px;">
+            <div class="container">
+                <table width="100%" bgcolor="white">
+    
+                    {{template "content" .}}
+    
+                </table>
+            </div>
+        </td></tr>
+        {{include "layouts/footer"}}
+    </table>
+    
+</body>
+</html>
