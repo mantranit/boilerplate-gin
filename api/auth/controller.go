@@ -113,7 +113,7 @@ func CtrlRegister(c *gin.Context) {
 		Email:     register.Email,
 		Hash:      string(hash),
 		Status:    models.StatusActive,
-		CreatedBy: register.Username,
+		CreatedBy: "register",
 	}
 
 	result := utils.DB.Create(&account)
