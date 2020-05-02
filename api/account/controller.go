@@ -121,23 +121,55 @@ func CtrlCreate(c *gin.Context) {
 
 // CtrlUpdate ...
 func CtrlUpdate(c *gin.Context) {
-	accountID := c.Param("id")
+	accID := c.Param("id")
+	var account Account
+	result := utils.DB.Where("id = ?", accID).Find(&account)
+
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    result.Error.Error(),
+		})
+		return
+	}
+
+	c.ShouldBind(&account)
+	account.UpdatedBy = utils.GetClaims(c).Issuer
+	result = utils.DB.Save(&account)
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    result.Error.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"statusCode": http.StatusOK,
 		"message":    "Success",
-		"data":       accountID,
+		"data":       account,
 	})
 }
 
 // CtrlDelete ...
 func CtrlDelete(c *gin.Context) {
 	accID := c.Param("id")
-	dbResult := utils.DB.Where("id = ?", accID).Delete(&Account{})
+	var account Account
+	result := utils.DB.Where("id = ?", accID).Find(&account)
 
-	if dbResult.RowsAffected == 0 {
+	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"statusCode": http.StatusNoContent,
-			"message":    "NoContent",
+			"statusCode": http.StatusInternalServerError,
+			"message":    result.Error.Error(),
+		})
+		return
+	}
+	result = utils.DB.Unscoped().Delete(&account)
+
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"statusCode": http.StatusInternalServerError,
+			"message":    result.Error.Error(),
 		})
 		return
 	}
