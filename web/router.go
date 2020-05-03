@@ -5,7 +5,8 @@ import (
 	"izihrm/web/auth"
 	"time"
 
-	gintemplate "github.com/foolin/gin-template"
+	"github.com/foolin/goview"
+	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,15 +16,12 @@ func SetupRouter(router *gin.Engine) {
 	router.Static("/assets", "./assets")
 
 	// new template engine
-	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
+	router.HTMLRender = ginview.New(goview.Config{
 		Root:      "templates/views",
 		Extension: ".html",
 		Master:    "layouts/master",
 		// Partials:  []string{"partials/ad"},
 		Funcs: template.FuncMap{
-			"sub": func(a, b int) int {
-				return a - b
-			},
 			"copy": func() string {
 				return time.Now().Format("2006")
 			},

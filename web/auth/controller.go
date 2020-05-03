@@ -7,7 +7,6 @@ import (
 	"izihrm/utils"
 	"net/http"
 
-	gintemplate "github.com/foolin/gin-template"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,7 +15,7 @@ var error string
 
 // CtrlPassword ...
 func CtrlPassword(c *gin.Context) {
-	gintemplate.HTML(c, http.StatusOK, "password", gin.H{
+	c.HTML(http.StatusOK, "password", gin.H{
 		"title": "Reset your password",
 		"token": c.Param("token"),
 		"error": error,
@@ -69,7 +68,7 @@ func CtrlCreatePassword(c *gin.Context) {
 
 // CtrlSuccess ...
 func CtrlSuccess(c *gin.Context) {
-	gintemplate.HTML(c, http.StatusOK, "success", gin.H{
+	c.HTML(http.StatusOK, "success", gin.H{
 		"title": "Success",
 	})
 }
